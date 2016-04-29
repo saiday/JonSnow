@@ -212,7 +212,8 @@ func GetReview(config Config) (Reviews, error) {
 
 		date, err := time.Parse("2006年1月2日", dateNode.Text())
 		if err != nil {
-			return nil, err
+			log.Println(err)
+			return
 		}
 
 		reviewTitle := s.Find(REVIEW_TITLE_CLASS_NAME).Text()
