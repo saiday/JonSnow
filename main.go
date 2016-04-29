@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 	"gopkg.in/yaml.v2"
 )
 
