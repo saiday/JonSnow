@@ -261,6 +261,7 @@ func SaveReviews(reviews Reviews) (Reviews, error) {
 
 	for _, review := range reviews {
 		var id int
+		log.Println(review.Message)
 		row := dbh.QueryRow("SELECT id FROM review WHERE author_uri = $1", review.AuthorUri)
 		err := row.Scan(&id)
 
