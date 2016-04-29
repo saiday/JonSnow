@@ -171,11 +171,15 @@ func main() {
 		return
 	}
 
+	log.Println(reviews)
+
 	reviews, err = SaveReviews(reviews)
 	if err != nil {
 		log.Println(err)
 		return
 	}
+
+	log.Println("saved")
 
 	err = PostReview(config, reviews)
 	if err != nil {
