@@ -163,23 +163,17 @@ func main() {
 		return
 	}
 
-	log.Println("start get google play app review")
-
 	reviews, err := GetReview(config)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	log.Println(reviews)
-
 	reviews, err = SaveReviews(reviews)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-
-	log.Println("saved")
 
 	err = PostReview(config, reviews)
 	if err != nil {
@@ -205,7 +199,6 @@ func GetReview(config Config) (Reviews, error) {
 		authorNode := s.Find(AUTHOR_NAME_CLASS_NAME)
 
 		authorName := authorNode.Text()
-		log.Println(authorName)
 		authorUri, _ := authorNode.Attr("href")
 
 		dateNode := s.Find(REVIEW_DATE_CLASS_NAME)
@@ -269,11 +262,9 @@ func SaveReviews(reviews Reviews) (Reviews, error) {
 
 	for _, review := range reviews {
 		var id int
-		log.Println(review.Message)
 		row := dbh.QueryRow("SELECT id FROM review WHERE author_uri = $1", review.AuthorUri)
 		err := row.Scan(&id)
 
-		log.Println(id)
 		if err != nil {
 			if err.Error() != "sql: no rows in result set" {
 				return postReviews, err
