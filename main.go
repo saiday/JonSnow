@@ -81,7 +81,7 @@ const (
 
 var (
 	dbh        *DBH
-	configFile = flag.String("c", "config.yml", "config file")
+	configFile = flag.String("c", "../config.yml", "config file")
 )
 
 func GetDBH() *DBH {
