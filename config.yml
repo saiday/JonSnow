@@ -5,6 +5,6 @@ message_text: "Google Play Review:"
 # web_hook_uri: "https://hooks.slack.com/services/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"
 # svdevelopers/stan-tests
 web_hook_uri: "https://hooks.slack.com/services/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"
-app_id: "com.streetvoice.streetvoice&hl=zh-tw"
+app_id: "com.streetvoice.streetvoice"
 db_path: "/tmp/john_snow10"
 review_count: 20

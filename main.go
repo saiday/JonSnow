@@ -191,7 +191,7 @@ func main() {
 }
 
 func GetReview(config Config) (Reviews, error) {
-	uri := fmt.Sprintf("%s/store/apps/details?id=%s", BASE_URI, config.AppId)
+	uri := fmt.Sprintf("%s/store/apps/details?id=%s&hl=zh-tw", BASE_URI, config.AppId)
 	log.Println(uri)
 	doc, err := goquery.NewDocument(uri)
 
@@ -210,7 +210,7 @@ func GetReview(config Config) (Reviews, error) {
 
 		dateNode := s.Find(REVIEW_DATE_CLASS_NAME)
 
-		const timeForm = "January 2, 2006"
+		const timeForm = "2006年1月2日"
 		date, err := time.Parse(timeForm, dateNode.Text())
 		if err != nil {
 			log.Println(err)
