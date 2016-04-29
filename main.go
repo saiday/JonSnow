@@ -210,7 +210,8 @@ func GetReview(config Config) (Reviews, error) {
 
 		dateNode := s.Find(REVIEW_DATE_CLASS_NAME)
 
-		date, err := time.Parse("2006年1月2日", dateNode.Text())
+		const timeForm = "July 21, 2014"
+		date, err := time.Parse(timeForm, dateNode.Text())
 		if err != nil {
 			log.Println(err)
 			return
