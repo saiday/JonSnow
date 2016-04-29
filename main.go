@@ -194,7 +194,6 @@ func GetReview(config Config) (Reviews, error) {
 	uri := fmt.Sprintf("%s/store/apps/details?id=%s", BASE_URI, config.AppId)
 	log.Println(uri)
 	doc, err := goquery.NewDocument(uri)
-	log.Println(doc)
 
 	if err != nil {
 		return nil, err
@@ -206,6 +205,7 @@ func GetReview(config Config) (Reviews, error) {
 		authorNode := s.Find(AUTHOR_NAME_CLASS_NAME)
 
 		authorName := authorNode.Text()
+		log.Println(authorName)
 		authorUri, _ := authorNode.Attr("href")
 
 		dateNode := s.Find(REVIEW_DATE_CLASS_NAME)
