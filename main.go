@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq"
 	"gopkg.in/yaml.v2"
 )
 
@@ -123,7 +123,7 @@ func NewConfig(path string) (config Config, err error) {
 		return config, fmt.Errorf("Please Set Num Between 1 and 40.")
 	}
 
-	db, err := sql.Open("sqlite3", config.DbPath)
+	db, err := sql.Open("postgres", "user=postgres dbname=jon_snow sslmode=disable")
 	if err != nil {
 		return config, err
 	}
@@ -166,7 +166,7 @@ func main() {
 		return
 	}
 
-	// reviews, err = SaveReviews(reviews)
+	reviews, err = SaveReviews(reviews)
 	if err != nil {
 		log.Println(err)
 		return
@@ -256,9 +256,10 @@ func SaveReviews(reviews Reviews) (Reviews, error) {
 
 	for _, review := range reviews {
 		var id int
-		row := dbh.QueryRow("SELECT id FROM review WHERE author_uri = ?", review.AuthorUri)
+		row := dbh.QueryRow("SELECT id FROM review WHERE author_uri = $1", review.AuthorUri)
 		err := row.Scan(&id)
 
+		log.Println(id)
 		if err != nil {
 			if err.Error() != "sql: no rows in result set" {
 				return postReviews, err
@@ -266,7 +267,7 @@ func SaveReviews(reviews Reviews) (Reviews, error) {
 		}
 
 		if id == 0 {
-			_, err := dbh.Exec("INSERT INTO review (author, author_uri, updated_at) VALUES (?, ?, ?)",
+			_, err := dbh.Exec("INSERT INTO review (author, author_uri, updated_at) VALUES ($1, $2, $3)",
 				review.Author, review.AuthorUri, review.UpdatedAt)
 			if err != nil {
 				return postReviews, err
