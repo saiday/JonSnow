@@ -123,7 +123,7 @@ func NewConfig(path string) (config Config, err error) {
 		return config, fmt.Errorf("Please Set Num Between 1 and 40.")
 	}
 
-	db, err := sql.Open("postgres", "user=postgres dbname=jon_snow sslmode=disable")
+	db, err := sql.Open("postgres", "user=postgres dbname=jon_snow sslmode=require")
 	if err != nil {
 		return config, err
 	}
