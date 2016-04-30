@@ -135,13 +135,19 @@ func NewConfig(path string) (config Config, err error) {
 
 	dbh = &DBH{db}
 
-	// override appId if environment variable found
+	// override BotName if environment variable found
+	botName := os.Getenv("JON_SNOW_BOT_NAME")
+	if botName != "" {
+		config.BotName = botName
+	}
+
+	// override AppId if environment variable found
 	appId := os.Getenv("JON_SNOW_APP_ID")
 	if appId != "" {
 		config.AppId = appId
 	}
 
-	// override webHookUri if environment variable found
+	// override WebHookUri if environment variable found
 	webHookUri := os.Getenv("JON_SNOW_SLACK_HOOK")
 	if webHookUri != "" {
 		config.WebHookUri = webHookUri
