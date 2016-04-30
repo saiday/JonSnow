@@ -4,7 +4,7 @@
   "keywords": ["go", "slack", "google play", "reviews"],
   "repository": "https://github.com/saiday/JonSnow",
   "scripts": {
-    "postdeploy": "psql -h echo ${DATABASE_URL} < schema.sql && /bin/JonSnow/"
+    "postdeploy": "psql -h echo ${DATABASE_URL} < schema.sql && bin/JonSnow/"
   },
   "env": {
     "JON_SNOW_APP_ID": {
