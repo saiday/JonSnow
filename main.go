@@ -26,7 +26,6 @@ type Config struct {
 	IconEmoji   string `yaml:"icon_emoji"`
 	MessageText string `yaml:"message_text"`
 	WebHookUri  string `yaml:"web_hook_uri"`
-	DbPath      string `yaml:"db_path"`
 }
 
 type Review struct {
@@ -116,10 +115,6 @@ func NewConfig(path string) (config Config, err error) {
 		return config, err
 	}
 
-	if config.AppId == "" {
-		return config, fmt.Errorf("Please Set Your Google Play App Id.")
-	}
-
 	if config.ReviewCount > MAX_REVIEW_NUM || config.ReviewCount < 1 {
 		return config, fmt.Errorf("Please Set Num Between 1 and 40.")
 	}
@@ -139,6 +134,22 @@ func NewConfig(path string) (config Config, err error) {
 	}
 
 	dbh = &DBH{db}
+
+	// override appId if environment variable found
+	appId := os.Getenv("JON_SNOW_APP_ID")
+	if appId != "" {
+		config.AppId = appId
+	}
+
+	// override webHookUri if environment variable found
+	webHookUri := os.Getenv("JON_SNOW_SLACK_HOOK")
+	if webHookUri != "" {
+		config.WebHookUri = webHookUri
+	}
+
+	if config.AppId == "" {
+		return config, fmt.Errorf("Please Set Your Google Play App Id.")
+	}
 
 	uri := fmt.Sprintf("%s/store/apps/details?id=%s", BASE_URI, config.AppId)
 

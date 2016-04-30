@@ -1,0 +1,23 @@
+{
+  "name": "Jon Snow the watcher",
+  "description": "This app monitor google play website on certain id, send new reviews to slack channel",
+  "keywords": ["go", "slack", "google play", "reviews"],
+  "repository": "https://github.com/saiday/JonSnow",
+  "scripts": {
+    "postdeploy": "psql -h echo ${DATABASE_URL} < schema.sql && /bin/JonSnow/"
+  },
+  "env": {
+    "JON_SNOW_APP_ID": {
+      "description": "your app_id on Google Play (required)"
+    },
+    "JON_SNOW_SLACK_HOOK": {
+      "description": "your slack incoming webhook URL (required)"
+    },
+    "JON_SNOW_BOT_NAME": {
+      "description": "your bot name, default is Jon Snow the watcher"
+    }
+  },
+  "addons": [
+    "heroku-postgresql:hobby-dev"
+  ]
+}

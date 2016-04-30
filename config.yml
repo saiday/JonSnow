@@ -1,10 +1,13 @@
-bot_name: "Watcher"
+bot_name: "Jon Snow the watcher"
 icon_emoji: ":sleuth_or_spy:"
 message_text: "Google Play Review:"
+review_count: 20
+
+# If you didn't set JON_SNOW_SLACK_HOOK as Environment Variables uncomment app_id line
 # sviv/sv-app
-web_hook_uri: "https://hooks.slack.com/services/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"
+# web_hook_uri: "https://hooks.slack.com/services/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"
 # svdevelopers/stan-tests
 # web_hook_uri: "https://hooks.slack.com/services/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"
-app_id: "com.streetvoice.streetvoice"
-db_path: "/tmp/john_snow10"
-review_count: 20
+
+# If you didn't set JON_SNOW_APP_ID as Environment Variables uncomment app_id line
+# app_id: "com.streetvoice.streetvoice"
