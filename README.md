@@ -2,7 +2,7 @@
 
 I made it easy for you, build your own monitoring service by one click, few configs. No codes needed.
 
-Deploy your own app to heroku:
+Deploy your own app to heroku:  
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/saiday/JonSnow&env[JON_SNOW_LOCATION]=zh-tw) (target on zh-tw store)
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/saiday/JonSnow&env[JON_SNOW_LOCATION]=en) (target on en store)
@@ -10,20 +10,21 @@ Deploy your own app to heroku:
 
 #### One more thing
 
-Congratulations, you got slack message when your service just deployed.
-One thing to do, add cron job on your service.
+Congratulations, you got slack message when your service just deployed.  
+One more thing to do, add cron job on your service.
 
-Hit Manage App button
+Hit Manage App button  
 ![](doc/deployed.png)
 
-Hit Heroku Scheduler in Add-ons section
+Hit Heroku Scheduler in Add-ons section  
 ![](doc/heroku-scheduler.png)
 
-You will see this page, hit Add new job button
+You will see this page, hit Add new job button  
 ![](doc/add-job.png)
 
-Fill our command: `$ bin/JonSnow`, select preferred frequency and save. Done.
+Fill our command: `$ bin/JonSnow`, select preferred frequency and save.  
 ![](doc/job.png)
 
+DONE.
 
 This project is inspired by [LaunchKit](https://launchkit.io/) and [go-google-play-review-watcher](https://github.com/Konboi/go-google-play-review-watcher)
