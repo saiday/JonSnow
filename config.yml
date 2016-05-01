@@ -2,7 +2,7 @@ bot_name: "Jon Snow the watcher"
 icon_emoji: ":sleuth_or_spy:"
 message_text: "Google Play Review:"
 review_count: 20
-location: "zh-tw"
+# location: "zh-tw"
 
 # web_hook_uri: "https://hooks.slack.com/services/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GG"
 # app_id: "com.streetvoice.streetvoice"
