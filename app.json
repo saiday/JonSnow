@@ -15,7 +15,10 @@
     },
     "JON_SNOW_BOT_NAME": {
       "description": "your bot name, default is Jon Snow the watcher"
-    }
+    },
+    "JON_SNOW_LOCATION": {
+      "description": "we currently only support two stores, zh-tw and en",
+      "value": "zh-tw"
   },
   "addons": [
     "heroku-postgresql:hobby-dev",
