@@ -19,6 +19,7 @@
     "JON_SNOW_LOCATION": {
       "description": "we currently only support two stores, zh-tw and en",
       "value": "zh-tw"
+    }
   },
   "addons": [
     "heroku-postgresql:hobby-dev",
