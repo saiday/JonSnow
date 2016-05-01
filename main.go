@@ -26,6 +26,7 @@ type Config struct {
 	IconEmoji   string `yaml:"icon_emoji"`
 	MessageText string `yaml:"message_text"`
 	WebHookUri  string `yaml:"web_hook_uri"`
+	Location    string `yaml:location`
 }
 
 type Review struct {
@@ -153,6 +154,12 @@ func NewConfig(path string) (config Config, err error) {
 		config.WebHookUri = webHookUri
 	}
 
+	// override Location if environment variable found
+	location := os.Getenv("JON_SNOW_LOCATION")
+	if location != "" {
+		config.Location = location
+	}
+
 	if config.AppId == "" {
 		return config, fmt.Errorf("Please Set Your Google Play App Id.")
 	}
@@ -202,7 +209,7 @@ func main() {
 }
 
 func GetReview(config Config) (Reviews, error) {
-	uri := fmt.Sprintf("%s/store/apps/details?id=%s&hl=zh-tw", BASE_URI, config.AppId)
+	uri := fmt.Sprintf("%s/store/apps/details?id=%s&hl=%s", BASE_URI, config.AppId, config.Location)
 	log.Println(uri)
 	doc, err := goquery.NewDocument(uri)
 
@@ -220,7 +227,13 @@ func GetReview(config Config) (Reviews, error) {
 
 		dateNode := s.Find(REVIEW_DATE_CLASS_NAME)
 
-		const timeForm = "2006年1月2日"
+		var timeForm string
+		if config.Location == "zh-tw" {
+			timeForm = "2006年1月2日"
+		} else if config.Location == "en" {
+			timeForm = "January 2, 2006"
+		}
+
 		date, err := time.Parse(timeForm, dateNode.Text())
 		if err != nil {
 			log.Println(err)

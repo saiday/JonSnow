@@ -8,10 +8,10 @@
   },
   "env": {
     "JON_SNOW_APP_ID": {
-      "description": "your app_id on Google Play (required)"
+      "description": "your app_id on Google Play (example: com.google.android.gm)"
     },
     "JON_SNOW_SLACK_HOOK": {
-      "description": "your slack incoming webhook URL (required)"
+      "description": "your slack incoming webhook URL (example: https://hooks.slack.com/services/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)"
     },
     "JON_SNOW_BOT_NAME": {
       "description": "your bot name, default is Jon Snow the watcher"
