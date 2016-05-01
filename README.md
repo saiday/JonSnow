@@ -1,4 +1,5 @@
 # Jon Snow the watcher
+> Jon Snow is elected the 998th Lord Commander of the Night's Watch.
 
 I made it easy for you, build your own monitoring service by one click, few configs. No codes needed.
 
@@ -26,5 +27,9 @@ Fill our command: `$ bin/JonSnow`, select preferred frequency and save.
 ![](doc/job.png)
 
 DONE.
+
+## Contact
+[@saiday](https://twitter.com/saiday)
+
 
 This project is inspired by [LaunchKit](https://launchkit.io/) and [go-google-play-review-watcher](https://github.com/Konboi/go-google-play-review-watcher)
