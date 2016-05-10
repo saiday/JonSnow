@@ -76,7 +76,7 @@ const (
 	REVIEW_MESSAGE_CLASS_NAME = ".review-body"
 	REVIEW_LINK_CLASS_NAME    = ".review-link"
 	REVIEW_RATE_CLASS_NAME    = ".review-info-star-rating .current-rating"
-	RAITING_EMOJI             = ":star:"
+	RATING_EMOJI             = ":star:"
 	MAX_REVIEW_NUM            = 40
 )
 
@@ -273,15 +273,15 @@ func parseRate(message string) string {
 
 	switch {
 	case strings.Contains(message, "width: 20%"):
-		rate = strings.Repeat(RAITING_EMOJI, 1)
+		rate = strings.Repeat(RATING_EMOJI, 1)
 	case strings.Contains(message, "width: 40%"):
-		rate = strings.Repeat(RAITING_EMOJI, 2)
+		rate = strings.Repeat(RATING_EMOJI, 2)
 	case strings.Contains(message, "width: 60%"):
-		rate = strings.Repeat(RAITING_EMOJI, 3)
+		rate = strings.Repeat(RATING_EMOJI, 3)
 	case strings.Contains(message, "width: 80%"):
-		rate = strings.Repeat(RAITING_EMOJI, 4)
+		rate = strings.Repeat(RATING_EMOJI, 4)
 	case strings.Contains(message, "width: 100%"):
-		rate = strings.Repeat(RAITING_EMOJI, 5)
+		rate = strings.Repeat(RATING_EMOJI, 5)
 	}
 
 	return rate
@@ -329,7 +329,7 @@ func PostReview(config Config, reviews Reviews) error {
 		fields := []SlackAttachmentField{}
 
 		fields = append(fields, SlackAttachmentField{
-			Title: "Raiting",
+			Title: "Rating",
 			Value: review.Rate,
 			Short: true,
 		})
