@@ -37,6 +37,8 @@ type Review struct {
 	Message   string
 	Rate      string
 	UpdatedAt time.Time `meddler:"updated_at,localtime"`
+	Permalink string
+	Color     string
 }
 
 type Reviews []Review
@@ -53,11 +55,14 @@ type SlackPayload struct {
 }
 
 type SlackAttachment struct {
-	Title     string                 `json:"title"`
-	TitleLink string                 `json:"title_link"`
-	Text      string                 `json:"text"`
-	Fallback  string                 `json:"fallback"`
-	Fields    []SlackAttachmentField `json:"fields"`
+	Author     string                 `json: author_name`
+	AuthorLink string                 `json: author_link`
+	Title      string                 `json:"title"`
+	TitleLink  string                 `json:"title_link"`
+	Text       string                 `json:"text"`
+	Fallback   string                 `json:"fallback"`
+	Color      string                 `json: color`
+	Fields     []SlackAttachmentField `json:"fields"`
 }
 
 type SlackAttachmentField struct {
@@ -67,17 +72,18 @@ type SlackAttachmentField struct {
 }
 
 const (
-	TABLE_NAME                = "review"
-	BASE_URI                  = "https://play.google.com"
-	REVIEW_CLASS_NAME         = ".single-review"
-	AUTHOR_NAME_CLASS_NAME    = ".review-info span.author-name a"
-	REVIEW_DATE_CLASS_NAME    = ".review-info .review-date"
-	REVIEW_TITLE_CLASS_NAME   = ".review-body .review-title"
-	REVIEW_MESSAGE_CLASS_NAME = ".review-body"
-	REVIEW_LINK_CLASS_NAME    = ".review-link"
-	REVIEW_RATE_CLASS_NAME    = ".review-info-star-rating .current-rating"
-	RATING_EMOJI             = ":star:"
-	MAX_REVIEW_NUM            = 40
+	TABLE_NAME                  = "review"
+	BASE_URI                    = "https://play.google.com"
+	REVIEW_CLASS_NAME           = ".single-review"
+	AUTHOR_NAME_CLASS_NAME      = ".review-info span.author-name a"
+	REVIEW_DATE_CLASS_NAME      = ".review-info .review-date"
+	REVIEW_TITLE_CLASS_NAME     = ".review-body .review-title"
+	REVIEW_MESSAGE_CLASS_NAME   = ".review-body"
+	REVIEW_LINK_CLASS_NAME      = ".review-link"
+	REVIEW_RATE_CLASS_NAME      = ".review-info-star-rating .current-rating"
+	RATING_EMOJI                = ":star:"
+	MAX_REVIEW_NUM              = 40
+	REVIEW_PERMALINK_CLASS_NAME = ".review-info .reviews-permalink"
 )
 
 var (
@@ -240,7 +246,14 @@ func GetReview(config Config) (Reviews, error) {
 			return
 		}
 
+		reviewPermalinkNode := s.Find(REVIEW_PERMALINK_CLASS_NAME)
+		reviewPermalink, _ := reivewPermalinkNode.Attr("href")
+
 		reviewTitle := s.Find(REVIEW_TITLE_CLASS_NAME).Text()
+		if len(reviewTitle) == 0 {
+			reviewTitle = "No title provided"
+		}
+
 		reviewMessage := s.Find(REVIEW_MESSAGE_CLASS_NAME).Text()
 		reviewLink := s.Find(REVIEW_LINK_CLASS_NAME).Text()
 
@@ -249,7 +262,11 @@ func GetReview(config Config) (Reviews, error) {
 		reviewRateNode := s.Find(REVIEW_RATE_CLASS_NAME)
 		rateMessage, _ := reviewRateNode.Attr("style")
 
-		rate := parseRate(rateMessage)
+		rate, rateCount := parseRate(rateMessage)
+		color := "#36a64f"
+		if rateCount < 4 {
+			color = "#a64f36"
+		}
 
 		review := Review{
 			Author:    authorName,
@@ -258,6 +275,8 @@ func GetReview(config Config) (Reviews, error) {
 			Message:   reviewMessage,
 			Rate:      rate,
 			UpdatedAt: date,
+			Permalink: reviewPermalink,
+			Color:     color,
 		}
 
 		reviews = append(reviews, review)
@@ -268,23 +287,23 @@ func GetReview(config Config) (Reviews, error) {
 	return reviews, nil
 }
 
-func parseRate(message string) string {
-	rate := ""
+func parseRate(message string) (string, int) {
+	rateCount := 0
 
 	switch {
 	case strings.Contains(message, "width: 20%"):
-		rate = strings.Repeat(RATING_EMOJI, 1)
+		rateCount = 1
 	case strings.Contains(message, "width: 40%"):
-		rate = strings.Repeat(RATING_EMOJI, 2)
+		rateCount = 2
 	case strings.Contains(message, "width: 60%"):
-		rate = strings.Repeat(RATING_EMOJI, 3)
+		rateCount = 3
 	case strings.Contains(message, "width: 80%"):
-		rate = strings.Repeat(RATING_EMOJI, 4)
+		rateCount = 4
 	case strings.Contains(message, "width: 100%"):
-		rate = strings.Repeat(RATING_EMOJI, 5)
+		rateCount = 5
 	}
 
-	return rate
+	return strings.Repeat(RATING_EMOJI, rateCount), rateCount
 }
 
 func SaveReviews(reviews Reviews) (Reviews, error) {
@@ -341,11 +360,14 @@ func PostReview(config Config, reviews Reviews) error {
 		})
 
 		attachments = append(attachments, SlackAttachment{
-			Title:     review.Author,
-			TitleLink: fmt.Sprintf("%s%s", BASE_URI, review.AuthorUri),
-			Text:      review.Message,
-			Fallback:  review.Message + " " + review.AuthorUri,
-			Fields:    fields,
+			Author:     review.Author,
+			AuthorLink: fmt.Sprintf("%s%s", BASE_URI, review.AuthorUri),
+			Title:      review.Author,
+			TitleLink:  fmt.Sprintf("%s%s", BASE_URI, review.Permalink),
+			Text:       review.Message,
+			Fallback:   review.Message + " " + review.AuthorUri,
+			Color:      review.Color,
+			Fields:     fields,
 		})
 	}
 
