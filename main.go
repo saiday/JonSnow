@@ -247,7 +247,7 @@ func GetReview(config Config) (Reviews, error) {
 		}
 
 		reviewPermalinkNode := s.Find(REVIEW_PERMALINK_CLASS_NAME)
-		reviewPermalink, _ := reivewPermalinkNode.Attr("href")
+		reviewPermalink, _ := reviewPermalinkNode.Attr("href")
 
 		reviewTitle := s.Find(REVIEW_TITLE_CLASS_NAME).Text()
 		if len(reviewTitle) == 0 {
