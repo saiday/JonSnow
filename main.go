@@ -82,6 +82,7 @@ const (
 	REVIEW_LINK_CLASS_NAME      = ".review-link"
 	REVIEW_RATE_CLASS_NAME      = ".review-info-star-rating .current-rating"
 	RATING_EMOJI                = ":star:"
+	RATING_EMOJI_2              = ":star2:"
 	MAX_REVIEW_NUM              = 40
 	REVIEW_PERMALINK_CLASS_NAME = ".review-info .reviews-permalink"
 )
@@ -262,11 +263,7 @@ func GetReview(config Config) (Reviews, error) {
 		reviewRateNode := s.Find(REVIEW_RATE_CLASS_NAME)
 		rateMessage, _ := reviewRateNode.Attr("style")
 
-		rate, rateCount := parseRate(rateMessage)
-		color := "#36a64f"
-		if rateCount < 4 {
-			color = "#a64f36"
-		}
+		rate := parseRate(rateMessage)
 
 		review := Review{
 			Author:    authorName,
@@ -276,7 +273,6 @@ func GetReview(config Config) (Reviews, error) {
 			Rate:      rate,
 			UpdatedAt: date,
 			Permalink: reviewPermalink,
-			Color:     color,
 		}
 
 		reviews = append(reviews, review)
@@ -287,23 +283,23 @@ func GetReview(config Config) (Reviews, error) {
 	return reviews, nil
 }
 
-func parseRate(message string) (string, int) {
-	rateCount := 0
+func parseRate(message string) string {
+	rateMessage := ""
 
 	switch {
 	case strings.Contains(message, "width: 20%"):
-		rateCount = 1
+		rateMessage = strings.Repeat(RATING_EMOJI, 1)
 	case strings.Contains(message, "width: 40%"):
-		rateCount = 2
+		rateMessage = strings.Repeat(RATING_EMOJI, 2)
 	case strings.Contains(message, "width: 60%"):
-		rateCount = 3
+		rateMessage = strings.Repeat(RATING_EMOJI, 3)
 	case strings.Contains(message, "width: 80%"):
-		rateCount = 4
+		rateMessage = strings.Repeat(RATING_EMOJI, 4)
 	case strings.Contains(message, "width: 100%"):
-		rateCount = 5
+		rateMessage = strings.Repeat(RATING_EMOJI_2, 5)
 	}
 
-	return strings.Repeat(RATING_EMOJI, rateCount), rateCount
+	return rateMessage
 }
 
 func SaveReviews(reviews Reviews) (Reviews, error) {
@@ -360,14 +356,12 @@ func PostReview(config Config, reviews Reviews) error {
 		})
 
 		attachments = append(attachments, SlackAttachment{
-			Author:     review.Author,
-			AuthorLink: fmt.Sprintf("%s%s", BASE_URI, review.AuthorUri),
-			Title:      review.Author,
-			TitleLink:  fmt.Sprintf("%s%s", BASE_URI, review.Permalink),
-			Text:       review.Message,
-			Fallback:   review.Message + " " + review.AuthorUri,
-			Color:      review.Color,
-			Fields:     fields,
+			Title:     review.Author,
+			TitleLink: fmt.Sprintf("%s%s", BASE_URI, review.Permalink),
+			Text:      review.Message,
+			Fallback:  review.Message + " " + review.AuthorUri,
+			Color:     review.Color,
+			Fields:    fields,
 		})
 	}
 
