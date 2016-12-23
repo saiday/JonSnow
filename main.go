@@ -32,7 +32,6 @@ type Config struct {
 type Review struct {
 	Id        int
 	Author    string
-	AuthorUri string `meddler:"author_uri"`
 	Title     string
 	Message   string
 	Rate      string
@@ -75,7 +74,7 @@ const (
 	TABLE_NAME                  = "review"
 	BASE_URI                    = "https://play.google.com"
 	REVIEW_CLASS_NAME           = ".single-review"
-	AUTHOR_NAME_CLASS_NAME      = ".review-info span.author-name a"
+	AUTHOR_NAME_CLASS_NAME      = ".review-info span.author-name"
 	REVIEW_DATE_CLASS_NAME      = ".review-info .review-date"
 	REVIEW_TITLE_CLASS_NAME     = ".review-body .review-title"
 	REVIEW_MESSAGE_CLASS_NAME   = ".review-body"
@@ -228,10 +227,7 @@ func GetReview(config Config) (Reviews, error) {
 
 	doc.Find(REVIEW_CLASS_NAME).Each(func(i int, s *goquery.Selection) {
 		authorNode := s.Find(AUTHOR_NAME_CLASS_NAME)
-
 		authorName := authorNode.Text()
-		authorUri, _ := authorNode.Attr("href")
-
 		dateNode := s.Find(REVIEW_DATE_CLASS_NAME)
 
 		var timeForm string
@@ -267,7 +263,6 @@ func GetReview(config Config) (Reviews, error) {
 
 		review := Review{
 			Author:    authorName,
-			AuthorUri: authorUri,
 			Title:     reviewTitle,
 			Message:   reviewMessage,
 			Rate:      rate,
@@ -307,7 +302,7 @@ func SaveReviews(reviews Reviews) (Reviews, error) {
 
 	for _, review := range reviews {
 		var id int
-		row := dbh.QueryRow("SELECT id FROM review WHERE author_uri = $1", review.AuthorUri)
+		row := dbh.QueryRow("SELECT id FROM review WHERE comment_uri = $1", review.Permalink)
 		err := row.Scan(&id)
 
 		if err != nil {
@@ -317,8 +312,8 @@ func SaveReviews(reviews Reviews) (Reviews, error) {
 		}
 
 		if id == 0 {
-			_, err := dbh.Exec("INSERT INTO review (author, author_uri, updated_at) VALUES ($1, $2, $3)",
-				review.Author, review.AuthorUri, review.UpdatedAt)
+			_, err := dbh.Exec("INSERT INTO review (author, comment_uri, updated_at) VALUES ($1, $2, $3)",
+				review.Author, review.Permalink, review.UpdatedAt)
 			if err != nil {
 				return postReviews, err
 			}
@@ -359,7 +354,7 @@ func PostReview(config Config, reviews Reviews) error {
 			Title:     review.Author,
 			TitleLink: fmt.Sprintf("%s%s", BASE_URI, review.Permalink),
 			Text:      review.Message,
-			Fallback:  review.Message + " " + review.AuthorUri,
+			Fallback:  review.Message + " " + review.Author,
 			Color:     review.Color,
 			Fields:    fields,
 		})
@@ -371,6 +366,7 @@ func PostReview(config Config, reviews Reviews) error {
 		Text:        config.MessageText,
 		Attachments: attachments,
 	}
+
 	payload, err := json.Marshal(slackPayload)
 	if err != nil {
 		return err

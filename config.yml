@@ -4,5 +4,5 @@ message_text: "Google Play Review:"
 review_count: 20
 location: "zh-tw"
 
-# web_hook_uri: "https://hooks.slack.com/services/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GG"
+# web_hook_uri: "your slack incoming hook"
 # app_id: "com.streetvoice.streetvoice"
