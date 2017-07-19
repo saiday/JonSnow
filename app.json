@@ -7,18 +7,25 @@
     "postdeploy": "psql -h echo ${DATABASE_URL} < schema.sql && bin/JonSnow"
   },
   "env": {
-    "JON_SNOW_APP_ID": {
+    "JON_SNOW_GOOGLE_PLAY_APP_ID": {
       "description": "your app_id on Google Play (example: com.google.android.gm)"
+    },
+    "JON_SNOW_APP_STORE_APP_ID": {
+      "description": "your app id on App Store (example: '284882215' for https://itunes.apple.com/us/app/facebook/id284882215)"
+    },
+    "JON_SNOW_GOOGLE_PLAY_LOCATION": {
+      "description": "we currently only support two stores, zh-tw and en (PRs are welcome)",
+      "value": "zh-tw"
+    },
+    "JON_SNOW_APP_STORE_LOCATION": {
+      "description": "tw, us, jp, ...",
+      "value": "tw"
     },
     "JON_SNOW_SLACK_HOOK": {
       "description": "your slack incoming webhook URL (example: https://hooks.slack.com/services/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)"
     },
     "JON_SNOW_BOT_NAME": {
       "description": "your bot name, default is Jon Snow the watcher"
-    },
-    "JON_SNOW_LOCATION": {
-      "description": "we currently only support two stores, zh-tw and en",
-      "value": "zh-tw"
     }
   },
   "addons": [

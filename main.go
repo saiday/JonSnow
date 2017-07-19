@@ -11,26 +11,32 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/clbanning/mxj"
 	"github.com/lib/pq"
 	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
-	AppId       string `yaml:"app_id"`
-	ReviewCount int    `yaml:"review_count"`
-	BotName     string `yaml:"bot_name"`
-	IconEmoji   string `yaml:"icon_emoji"`
-	MessageText string `yaml:"message_text"`
-	WebHookUri  string `yaml:"web_hook_uri"`
-	Location    string `yaml:location`
+	GooglePlayAppId    string `yaml:"google_play_app_id"`
+	AppStoreAppId      string `yaml:"app_store_app_id"`
+	ReviewCount        int    `yaml:"review_count"`
+	BotName            string `yaml:"bot_name"`
+	IconEmoji          string `yaml:"icon_emoji"`
+	WebHookUri         string `yaml:"web_hook_uri"`
+	GooglePlayLocation string `yaml:"google_play_location"`
+	AppStoreLocation   string `yaml:"app_store_location"`
+	GooglePlayURI      string
+	AppStoreURI        string
 }
 
 type Review struct {
 	Id        int
+	Store     string
 	Author    string
 	Title     string
 	Message   string
@@ -54,13 +60,14 @@ type SlackPayload struct {
 }
 
 type SlackAttachment struct {
-	Author     string                 `json: author_name`
-	AuthorLink string                 `json: author_link`
+	AuthorLink string                 `json:"author_link"`
 	Title      string                 `json:"title"`
 	TitleLink  string                 `json:"title_link"`
 	Text       string                 `json:"text"`
 	Fallback   string                 `json:"fallback"`
-	Color      string                 `json: color`
+	Color      string                 `json:"color"`
+	AuthorName string                 `json:"author_name"`
+	Footer     string                 `json:"footer"`
 	Fields     []SlackAttachmentField `json:"fields"`
 }
 
@@ -72,7 +79,8 @@ type SlackAttachmentField struct {
 
 const (
 	TABLE_NAME                  = "review"
-	BASE_URI                    = "https://play.google.com"
+	GOOGLE_PLAY_BASE_URI        = "https://play.google.com"
+	APP_STORE_BASE_URI          = "https://itunes.apple.com"
 	REVIEW_CLASS_NAME           = ".single-review"
 	AUTHOR_NAME_CLASS_NAME      = ".review-info span.author-name"
 	REVIEW_DATE_CLASS_NAME      = ".review-info .review-date"
@@ -127,8 +135,9 @@ func NewConfig(path string) (config Config, err error) {
 	}
 
 	url := os.Getenv("DATABASE_URL")
+	fmt.Println(url)
 	connection, _ := pq.ParseURL(url)
-	connection += " sslmode=require"
+	connection += " sslmode=disable"
 
 	db, err := sql.Open("postgres", connection)
 	if err != nil {
@@ -149,9 +158,15 @@ func NewConfig(path string) (config Config, err error) {
 	}
 
 	// override AppId if environment variable found
-	appId := os.Getenv("JON_SNOW_APP_ID")
-	if appId != "" {
-		config.AppId = appId
+	googlePlayAppId := os.Getenv("JON_SNOW_GOOGLE_PLAY_APP_ID")
+	if googlePlayAppId != "" {
+		config.GooglePlayAppId = googlePlayAppId
+	}
+
+	// override AppId if environment variable found
+	appStoreAppId := os.Getenv("JON_SNOW_APP_STORE_APP_ID")
+	if appStoreAppId != "" {
+		config.AppStoreAppId = appStoreAppId
 	}
 
 	// override WebHookUri if environment variable found
@@ -161,27 +176,67 @@ func NewConfig(path string) (config Config, err error) {
 	}
 
 	// override Location if environment variable found
-	location := os.Getenv("JON_SNOW_LOCATION")
-	if location != "" {
-		config.Location = location
+	googlePlayLocation := os.Getenv("JON_SNOW_GOOGLE_PLAY_LOCATION")
+	if googlePlayLocation != "" {
+		config.GooglePlayLocation = googlePlayLocation
 	}
 
-	if config.AppId == "" {
-		return config, fmt.Errorf("Please Set Your Google Play App Id.")
+	// override Location if environment variable found
+	appStoreLocation := os.Getenv("JON_SNOW_APP_STORE_LOCATION")
+	if appStoreLocation != "" {
+		config.AppStoreLocation = appStoreLocation
 	}
 
-	uri := fmt.Sprintf("%s/store/apps/details?id=%s", BASE_URI, config.AppId)
+	if config.AppStoreAppId == "" && config.GooglePlayAppId == "" {
+		return config, fmt.Errorf("At least one of Google Play or App Store app id is required.")
+	}
 
-	res, err := http.Get(uri)
+	googlePlayURI := ""
+	appStoreURI := ""
+	if id := config.GooglePlayAppId; id != "" {
+		googlePlayURI := fmt.Sprintf("%s/store/apps/details?id=%s&hl=%s", GOOGLE_PLAY_BASE_URI, id, config.GooglePlayLocation)
+		config.GooglePlayURI = googlePlayURI
+	}
+
+	if id := config.AppStoreAppId; id != "" {
+		appStoreURI = fmt.Sprintf("%s/%s/app/id%s", APP_STORE_BASE_URI, config.AppStoreLocation, id)
+		config.AppStoreURI = appStoreURI
+	}
+
+	ids := []string{googlePlayURI, appStoreURI}
+	err = CheckStoreURLAvailable(ids)
 	if err != nil {
 		return config, err
 	}
 
-	if res.StatusCode == http.StatusNotFound {
-		return config, fmt.Errorf("AppID: %s is not exists", config.AppId)
-	}
-
 	return config, err
+}
+
+func ValidateStoreURI(uri string) error {
+	res, err := http.Get(uri)
+	if err == nil && res.StatusCode == http.StatusNotFound {
+		err = fmt.Errorf("URI: %s is not exists", uri)
+	}
+	return err
+}
+
+func CheckStoreURLAvailable(uris []string) error {
+	var err error = nil
+	for _, uri := range uris {
+		if target := uri; target != "" {
+			targetValidateErr := ValidateStoreURI(target)
+			if targetValidateErr != nil {
+				if err != nil {
+					if err != nil {
+						err = fmt.Errorf("URI Error: %v, %v", err, targetValidateErr)
+					} else {
+						err = fmt.Errorf("URI Error: %v", targetValidateErr)
+					}
+				}
+			}
+		}
+	}
+	return err
 }
 
 func main() {
@@ -193,29 +248,78 @@ func main() {
 		return
 	}
 
-	reviews, err := GetReview(config)
+	if config.GooglePlayURI != "" {
+		err = ProcessGooglePlayReviews(config)
+
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	}
+
+	if config.AppStoreURI != "" {
+		err = ProcessAppStoreReviews(config)
+
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	}
+
+	log.Println("all done.")
+}
+
+func ProcessGooglePlayReviews(config Config) error {
+	log.Println("Processing Android reviews ...")
+
+	uri := config.GooglePlayURI
+
+	reviews, err := GetGooglePlayReviews(config, uri)
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 
 	reviews, err = SaveReviews(reviews)
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 
 	err = PostReview(config, reviews)
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 
-	log.Println("done")
+	log.Println("Google Play reviews process finished")
+
+	return nil
 }
 
-func GetReview(config Config) (Reviews, error) {
-	uri := fmt.Sprintf("%s/store/apps/details?id=%s&hl=%s", BASE_URI, config.AppId, config.Location)
+func ProcessAppStoreReviews(config Config) error {
+	log.Println("Processing App Store reviews ...")
+
+	uri := config.AppStoreURI
+
+	reviews, err := GetAppStoreReviews(config, uri)
+	if err != nil {
+		return err
+	}
+
+	reviews, err = SaveReviews(reviews)
+	if err != nil {
+		return err
+	}
+
+	err = PostReview(config, reviews)
+	if err != nil {
+		return err
+	}
+
+	log.Println("App Store reviews process finished")
+
+	return nil
+}
+
+func GetGooglePlayReviews(config Config, uri string) (Reviews, error) {
 	log.Println(uri)
 	doc, err := goquery.NewDocument(uri)
 
@@ -231,9 +335,9 @@ func GetReview(config Config) (Reviews, error) {
 		dateNode := s.Find(REVIEW_DATE_CLASS_NAME)
 
 		var timeForm string
-		if config.Location == "zh-tw" {
+		if config.GooglePlayLocation == "zh-tw" {
 			timeForm = "2006年1月2日"
-		} else if config.Location == "en" {
+		} else if config.GooglePlayLocation == "en" {
 			timeForm = "January 2, 2006"
 		}
 
@@ -259,15 +363,16 @@ func GetReview(config Config) (Reviews, error) {
 		reviewRateNode := s.Find(REVIEW_RATE_CLASS_NAME)
 		rateMessage, _ := reviewRateNode.Attr("style")
 
-		rate := parseRate(rateMessage)
+		rate := parseGooglePlayRate(rateMessage)
 
 		review := Review{
 			Author:    authorName,
+			Store:     "Google Play",
 			Title:     reviewTitle,
 			Message:   reviewMessage,
 			Rate:      rate,
 			UpdatedAt: date,
-			Permalink: reviewPermalink,
+			Permalink: fmt.Sprintf("%s%s", GOOGLE_PLAY_BASE_URI, reviewPermalink),
 		}
 
 		reviews = append(reviews, review)
@@ -278,7 +383,67 @@ func GetReview(config Config) (Reviews, error) {
 	return reviews, nil
 }
 
-func parseRate(message string) string {
+func GetAppStoreReviews(config Config, uri string) (Reviews, error) {
+	log.Println(uri)
+
+	rssUri := fmt.Sprintf("%s/%s/rss/customerreviews/page=1/id=%s/sortBy=mostRecent/xml", APP_STORE_BASE_URI, config.AppStoreLocation, config.AppStoreAppId)
+	log.Println(rssUri)
+	response, err := http.Get(rssUri)
+	reviews := Reviews{}
+	if err != nil {
+		return nil, err
+	} else {
+		defer response.Body.Close()
+		contents, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return nil, err
+		}
+		data, err := mxj.NewMapXml(contents)
+		if err != nil {
+			log.Fatal("parsing xml failed")
+			return nil, err
+		}
+
+		entries, err := data.ValuesForPath("feed.entry")
+		if err != nil {
+			log.Fatal("get xml entry failed")
+			return nil, err
+		}
+		for i, entry := range entries {
+			if i == 0 {
+				continue
+				// TODO: what's this
+			}
+			rate, _ := strconv.Atoi(entry.(map[string]interface{})["rating"].(string))
+			commonData := entry.(map[string]interface{})
+			author := commonData["author"].(map[string]interface{})
+
+			updatedAt, err := time.Parse(time.RFC3339, commonData["updated"].(string))
+			if err != nil {
+				log.Fatal("parse time failed")
+				return nil, err
+			}
+
+			message := commonData["content"].([]interface{})[0].(map[string]interface{})["#text"].(string)
+
+			review := Review{
+				Author:    author["name"].(string),
+				Store:     "App Store",
+				Title:     commonData["title"].(string),
+				Message:   message,
+				Rate:      strings.Repeat(RATING_EMOJI, rate),
+				UpdatedAt: updatedAt,
+				Permalink: author["uri"].(string),
+			}
+
+			reviews = append(reviews, review)
+		}
+	}
+	sort.Sort(reviews)
+	return reviews, nil
+}
+
+func parseGooglePlayRate(message string) string {
 	rateMessage := ""
 
 	switch {
@@ -311,9 +476,9 @@ func SaveReviews(reviews Reviews) (Reviews, error) {
 			}
 		}
 
-		if id == 0 {
-			_, err := dbh.Exec("INSERT INTO review (author, comment_uri, updated_at) VALUES ($1, $2, $3)",
-				review.Author, review.Permalink, review.UpdatedAt)
+		if id == 0 { // not exist
+			_, err := dbh.Exec("INSERT INTO review (author, store, comment_uri, updated_at) VALUES ($1, $2, $3, $4)",
+				review.Author, review.Store, review.Permalink, review.UpdatedAt)
 			if err != nil {
 				return postReviews, err
 			}
@@ -351,19 +516,22 @@ func PostReview(config Config, reviews Reviews) error {
 		})
 
 		attachments = append(attachments, SlackAttachment{
-			Title:     review.Author,
-			TitleLink: fmt.Sprintf("%s%s", BASE_URI, review.Permalink),
-			Text:      review.Message,
-			Fallback:  review.Message + " " + review.Author,
-			Color:     review.Color,
-			Fields:    fields,
+			Title:      review.Title,
+			TitleLink:  review.Permalink,
+			AuthorName: review.Author,
+			Text:       review.Message,
+			Fallback:   review.Message + " " + review.Author,
+			Color:      review.Color,
+			Fields:     fields,
+			Footer:     review.Store,
 		})
 	}
 
+	messageText := reviews[0].Store + " Reviews:"
 	slackPayload := SlackPayload{
 		UserName:    config.BotName,
 		IconEmoji:   config.IconEmoji,
-		Text:        config.MessageText,
+		Text:        messageText,
 		Attachments: attachments,
 	}
 
@@ -372,8 +540,12 @@ func PostReview(config Config, reviews Reviews) error {
 		return err
 	}
 
-	req, _ := http.NewRequest("POST", config.WebHookUri, bytes.NewBuffer([]byte(payload)))
+	req, err := http.NewRequest("POST", config.WebHookUri, bytes.NewBuffer([]byte(payload)))
 	req.Header.Set("Content-Type", "application/json")
+
+	if err != nil {
+		return err
+	}
 
 	client := http.DefaultClient
 	res, err := client.Do(req)
