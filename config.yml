@@ -1,9 +1,9 @@
 bot_name: "Jon Snow the watcher"
 icon_emoji: ":sleuth_or_spy:"
 review_count: 20
-google_play_location: "zh-tw"
-app_store_location: "tw"
+google_play_location: "en"
+app_store_location: "us"
 
-# web_hook_uri: "Your Slack incoming hooks"
-# google_play_app_id: "com.streetvoice.streetvoice"
-# app_store_app_id: "804704919"
+# web_hook_uri: "Your slack incoming hook"
+# google_play_app_id: "com.google.android.gm"
+# app_store_app_id: "284882215"

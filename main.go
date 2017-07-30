@@ -431,7 +431,7 @@ func GetAppStoreReviews(config Config, uri string) (Reviews, error) {
 				Store:     "App Store",
 				Title:     commonData["title"].(string),
 				Message:   message,
-				Rate:      strings.Repeat(RATING_EMOJI, rate),
+				Rate:      parseAppStoreRate(rate),
 				UpdatedAt: updatedAt,
 				Permalink: author["uri"].(string),
 			}
@@ -441,6 +441,17 @@ func GetAppStoreReviews(config Config, uri string) (Reviews, error) {
 	}
 	sort.Sort(reviews)
 	return reviews, nil
+}
+
+func parseAppStoreRate(count int) string {
+	rateMessage := ""
+	if count < 5 {
+		rateMessage = strings.Repeat(RATING_EMOJI, count)
+	} else {
+		rateMessage = strings.Repeat(RATING_EMOJI_2, count)
+	}
+
+	return rateMessage
 }
 
 func parseGooglePlayRate(message string) string {

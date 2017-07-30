@@ -3,32 +3,21 @@
 
 ![](doc/screenshot.png)
 
-I made it easy for you, build your own monitoring service by one click, few configs. No codes needed.
+Jon Snow made App Store, Google Play review monitoring easy, build your own service by one click, few configs.  
+No codes needed.
 
-Deploy your own app to heroku:  
+## Deploy your own app to heroku (shortcuts)
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/saiday/JonSnow&env[JON_SNOW_GOOGLE_PLAY_LOCATION]=zh-tw&env[JON_SNOW_APP_STORE_LOCATION]=tw) (targeting tw store)
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/saiday/JonSnow&env[JON_SNOW_GOOGLE_PLAY_LOCATION]=en&env[JON_SNOW_APP_STORE_LOCATION]=us) (targeting us store)
 
 
-#### One more thing
+### One more thing (Sync new reviews)
 
-Congratulations, you've got slack message after your heroku app deployed.  
-One more thing to do, add cron job on your service.
+You have to add cron job on your heroku service by yourself.  
+The executable binary located at `bin/JonSnow` which is your scheduling target.
 
-Hit Manage App button  
-![](doc/deployed.png)
-
-Hit Heroku Scheduler in Add-ons section  
-![](doc/heroku-scheduler.png)
-
-You will see this page, hit Add new job button  
-![](doc/add-job.png)
-
-Fill our command: `$ bin/JonSnow`, select preferred frequency and save.  
-![](doc/job.png)
-
-DONE.
+You can follow our simple instruction: [Add cron job on heroku](https://github.com/saiday/JonSnow/wiki/Add-cron-job-on-heroku) as well.
 
 ## Contact
 [@saiday](https://twitter.com/saiday)
