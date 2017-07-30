@@ -13,7 +13,7 @@ Deploy your own app to heroku:
 
 #### One more thing
 
-Congratulations, you got slack message when your service just deployed.  
+Congratulations, you've got slack message after your heroku app deployed.  
 One more thing to do, add cron job on your service.
 
 Hit Manage App button  
