@@ -1,17 +1,19 @@
 {
   "name": "Jon Snow the watcher",
-  "description": "This app monitor google play website on certain id, send new reviews to slack channel",
-  "keywords": ["go", "slack", "google play", "reviews"],
+  "description": "This app monitor App Store, Google Play reviews on certain id, send new reviews to slack channel",
+  "keywords": ["go", "slack", "app store", "google play", "reviews"],
   "repository": "https://github.com/saiday/JonSnow",
   "scripts": {
     "postdeploy": "psql -h echo ${DATABASE_URL} < schema.sql && bin/JonSnow"
   },
   "env": {
     "JON_SNOW_GOOGLE_PLAY_APP_ID": {
-      "description": "your app_id on Google Play (example: com.google.android.gm)"
+      "description": "your app_id on Google Play (example: com.google.android.gm)",
+      "required": false
     },
     "JON_SNOW_APP_STORE_APP_ID": {
-      "description": "your app id on App Store (example: '284882215' for https://itunes.apple.com/us/app/facebook/id284882215)"
+      "description": "your app id on App Store (example: '284882215' for https://itunes.apple.com/us/app/facebook/id284882215)",
+      "required": false
     },
     "JON_SNOW_GOOGLE_PLAY_LOCATION": {
       "description": "we currently only support two stores, zh-tw and en (Pull Request are welcome)",
