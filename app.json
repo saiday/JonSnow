@@ -14,7 +14,7 @@
       "description": "your app id on App Store (example: '284882215' for https://itunes.apple.com/us/app/facebook/id284882215)"
     },
     "JON_SNOW_GOOGLE_PLAY_LOCATION": {
-      "description": "we currently only support two stores, zh-tw and en (PRs are welcome)",
+      "description": "we currently only support two stores, zh-tw and en (Pull Request are welcome)",
       "value": "zh-tw"
     },
     "JON_SNOW_APP_STORE_LOCATION": {
