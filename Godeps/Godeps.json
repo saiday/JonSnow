@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/saiday/JonSnow",
-	"GoVersion": "go1.5",
+	"GoVersion": "go1.8",
 	"GodepVersion": "v62",
 	"Deps": [
 		{
@@ -11,6 +11,11 @@
 		{
 			"ImportPath": "github.com/andybalholm/cascadia",
 			"Rev": "3ad29d1ad1c4f2023e355603324348cf1f4b2d48"
+		},
+		{
+			"ImportPath": "github.com/clbanning/mxj",
+			"Comment": "v1.6.1",
+			"Rev": "1cda74d18ebbb04f525b355309c16d594e1f8f77"
 		},
 		{
 			"ImportPath": "github.com/lib/pq",
