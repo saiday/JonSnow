@@ -6,9 +6,9 @@
 I made it easy for you, build your own monitoring service by one click, few configs. No codes needed.
 
 Deploy your own app to heroku:  
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/saiday/JonSnow&env[JON_SNOW_LOCATION]=zh-tw) (targeting tw store)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/saiday/JonSnow&env[JON_SNOW_GOOGLE_PLAY_LOCATION]=zh-tw&env[JON_SNOW_APP_STORE_LOCATION]=tw) (targeting tw store)
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/saiday/JonSnow&env[JON_SNOW_LOCATION]=en) (targeting us store)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/saiday/JonSnow&env[JON_SNOW_GOOGLE_PLAY_LOCATION]=en&env[JON_SNOW_APP_STORE_LOCATION]=us) (targeting us store)
 
 
 #### One more thing
