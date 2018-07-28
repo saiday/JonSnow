@@ -361,7 +361,7 @@ func GetGooglePlayReviews(config Config, uri string, id string, hl string) (Revi
 		dateNode := s.Find(REVIEW_DATE_CLASS_NAME)
 
 		var timeForm string
-		if config.GooglePlayLocation == "zh_TW" {
+		if config.GooglePlayLocation == "zh_TW" || config.GooglePlayLocation == "zh_CN" {
 			timeForm = "2006年1月2日"
 		} else if config.GooglePlayLocation == "en" {
 			timeForm = "January 2, 2006"
