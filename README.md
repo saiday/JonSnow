@@ -7,7 +7,7 @@ Jon Snow made App Store, Google Play review monitoring easy, build your own serv
 No codes needed.
 
 ## Deploy your own app to heroku (shortcuts)
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/saiday/JonSnow&env[JON_SNOW_GOOGLE_PLAY_LOCATION]=zh-tw&env[JON_SNOW_APP_STORE_LOCATION]=tw) (targeting tw store)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/saiday/JonSnow&env[JON_SNOW_GOOGLE_PLAY_LOCATION]=zh_TW&env[JON_SNOW_APP_STORE_LOCATION]=tw) (targeting tw store)
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/saiday/JonSnow&env[JON_SNOW_GOOGLE_PLAY_LOCATION]=en&env[JON_SNOW_APP_STORE_LOCATION]=us) (targeting us store)
 
