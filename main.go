@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"html"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"sort"
 	"strconv"
@@ -30,7 +32,6 @@ type Config struct {
 	WebHookUri         string `yaml:"web_hook_uri"`
 	GooglePlayLocation string `yaml:"google_play_location"`
 	AppStoreLocation   string `yaml:"app_store_location"`
-	GooglePlayURI      string
 	AppStoreURI        string
 }
 
@@ -79,7 +80,7 @@ type SlackAttachmentField struct {
 
 const (
 	TABLE_NAME                  = "review"
-	GOOGLE_PLAY_BASE_URI        = "https://play.google.com"
+	GOOGLE_PLAY_BASE_URI        = "https://play.google.com/store/getreviews"
 	APP_STORE_BASE_URI          = "https://itunes.apple.com"
 	REVIEW_CLASS_NAME           = ".single-review"
 	AUTHOR_NAME_CLASS_NAME      = ".review-info span.author-name"
@@ -191,19 +192,13 @@ func NewConfig(path string) (config Config, err error) {
 		return config, fmt.Errorf("At least one of Google Play or App Store app id is required.")
 	}
 
-	googlePlayURI := ""
 	appStoreURI := ""
-	if id := config.GooglePlayAppId; id != "" {
-		googlePlayURI := fmt.Sprintf("%s/store/apps/details?id=%s&hl=%s", GOOGLE_PLAY_BASE_URI, id, config.GooglePlayLocation)
-		config.GooglePlayURI = googlePlayURI
-	}
-
 	if id := config.AppStoreAppId; id != "" {
 		appStoreURI = fmt.Sprintf("%s/%s/app/id%s", APP_STORE_BASE_URI, config.AppStoreLocation, id)
 		config.AppStoreURI = appStoreURI
 	}
 
-	ids := []string{googlePlayURI, appStoreURI}
+	ids := []string{appStoreURI}
 	err = CheckStoreURLAvailable(ids)
 	if err != nil {
 		return config, err
@@ -248,7 +243,7 @@ func main() {
 		return
 	}
 
-	if config.GooglePlayURI != "" {
+	if config.GooglePlayAppId != "" {
 		err = ProcessGooglePlayReviews(config)
 
 		if err != nil {
@@ -272,9 +267,7 @@ func main() {
 func ProcessGooglePlayReviews(config Config) error {
 	log.Println("Processing Android reviews ...")
 
-	uri := config.GooglePlayURI
-
-	reviews, err := GetGooglePlayReviews(config, uri)
+	reviews, err := GetGooglePlayReviews(config, GOOGLE_PLAY_BASE_URI, config.GooglePlayAppId, config.GooglePlayLocation)
 	if err != nil {
 		return err
 	}
@@ -319,9 +312,42 @@ func ProcessAppStoreReviews(config Config) error {
 	return nil
 }
 
-func GetGooglePlayReviews(config Config, uri string) (Reviews, error) {
-	log.Println(uri)
-	doc, err := goquery.NewDocument(uri)
+func escapedBytesToString(b []byte) string {
+	b = bytes.Replace(b, []byte("\\u003c"), []byte("<"), -1)
+	b = bytes.Replace(b, []byte("\\u003e"), []byte(">"), -1)
+	b = bytes.Replace(b, []byte("\\u0026"), []byte("&"), -1)
+	b = bytes.Replace(b, []byte("\\u003d"), []byte("="), -1)
+	b = bytes.Replace(b, []byte("\\\""), []byte("\""), -1)
+	return string(b)
+}
+
+func GetGooglePlayReviews(config Config, uri string, id string, hl string) (Reviews, error) {
+	log.Println(fmt.Sprintf("id: %s, hl: %s", id, hl))
+	hc := http.Client{}
+
+	form := url.Values{}
+	form.Add("hl", hl)
+	form.Add("id", id)
+	form.Add("reviewType", "0")
+	form.Add("pageNum", "0")
+	form.Add("reviewSortOrder", "0")
+	form.Add("xhr", "1")
+
+	req, err := http.NewRequest("POST", uri, strings.NewReader(form.Encode()))
+	req.PostForm = form
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := hc.Do(req)
+
+	defer resp.Body.Close()
+
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	bodyString := escapedBytesToString(bodyBytes)
+	firstSpace := strings.Index(bodyString, " ")
+	lastSpace := strings.LastIndex(bodyString, " ")
+	content := html.UnescapeString(bodyString[firstSpace+1 : lastSpace])
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
 
 	if err != nil {
 		return nil, err
@@ -335,7 +361,7 @@ func GetGooglePlayReviews(config Config, uri string) (Reviews, error) {
 		dateNode := s.Find(REVIEW_DATE_CLASS_NAME)
 
 		var timeForm string
-		if config.GooglePlayLocation == "zh-tw" {
+		if config.GooglePlayLocation == "zh_TW" {
 			timeForm = "2006年1月2日"
 		} else if config.GooglePlayLocation == "en" {
 			timeForm = "January 2, 2006"

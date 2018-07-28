@@ -16,7 +16,7 @@
       "required": false
     },
     "JON_SNOW_GOOGLE_PLAY_LOCATION": {
-      "description": "we currently only support two stores, zh-tw and en (Pull Request are welcome)",
+      "description": "we currently only support two stores, zh_TW and en (Pull Request are welcome)",
       "value": "zh-tw"
     },
     "JON_SNOW_APP_STORE_LOCATION": {
