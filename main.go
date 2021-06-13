@@ -138,7 +138,7 @@ func NewConfig(path string) (config Config, err error) {
 	url := os.Getenv("DATABASE_URL")
 	fmt.Println(url)
 	connection, _ := pq.ParseURL(url)
-	connection += " sslmode=disable"
+	connection += " sslmode=require"
 
 	db, err := sql.Open("postgres", connection)
 	if err != nil {
